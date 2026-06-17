@@ -1,0 +1,14 @@
+% git, code
+
+# Change branch
+git checkout <branch>
+
+# Force push current branch
+git push origin <current_branch> --force
+
+$ branch: git branch | awk '{print $2}'
+$ current_branch: git rev-parse --abbrev-ref HEAD
+$ remote: git remote --- --multi
+
+; this is a comment line, ignored by navi
+@ denisidoro

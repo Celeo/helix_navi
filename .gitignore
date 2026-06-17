@@ -1,0 +1,27 @@
+# Node
+node_modules/
+
+# Generated parser + bindings build artifacts
+build/
+*.o
+*.so
+*.dylib
+*.wasm
+
+# NOTE: src/ (parser.c, grammar.json, node-types.json, tree_sitter/) is
+# intentionally committed so consumers can build without running
+# `tree-sitter generate`. Regenerate it after editing grammar.js.
+
+# Python build
+dist/
+*.egg-info/
+__pycache__/
+
+# Rust
+target/
+
+# Swift
+.build/
+
+# Editor / OS
+.DS_Store
