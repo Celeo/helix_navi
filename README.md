@@ -7,6 +7,8 @@
 
 A [tree-sitter](https://tree-sitter.github.io/) grammar for [navi](https://github.com/denisidoro/navi) `.cheat` cheatsheet files. It powers syntax highlighting and structural parsing of navi cheatsheets in editors like [Helix](https://helix-editor.com/), Neovim, and anything else that speaks tree-sitter.
 
+![A navi .cheat file with syntax highlighting in Helix](screenshot.png)
+
 ## What it parses
 
 navi cheatsheets are line-oriented — the first character of each line (its *marker*) decides the line type:
@@ -44,7 +46,56 @@ npx tree-sitter highlight example.cheat
 
 ### Editor integration
 
-Highlight queries live in [`queries/highlights.scm`](queries/highlights.scm). Point your editor's tree-sitter configuration at this grammar (file type: `.cheat`, scope: `source.navi`) to get highlighting. For Helix, add a `[[language]]` + `[[grammar]]` entry referencing this repo.
+Highlight queries live in [`queries/highlights.scm`](queries/highlights.scm). Point your editor's tree-sitter configuration at this grammar (file type: `.cheat`, scope: `source.navi`) to get highlighting.
+
+#### Helix
+
+1. Add the language and grammar to `~/.config/helix/languages.toml`:
+
+   ```toml
+   [[language]]
+   name = "navi"
+   scope = "source.navi"
+   file-types = ["cheat"]
+   comment-token = ";"
+   indent = { tab-width = 2, unit = "  " }
+   grammar = "navi"
+
+   [[grammar]]
+   name = "navi"
+   # Use a local path during development — no git fetch, no credentials,
+   # and it picks up your edits immediately.
+   source = { path = "/absolute/path/to/tree-sitter-navi" }
+   ```
+
+   For a published/shared setup, swap the local path for a git source instead:
+   `source = { git = "ssh://git@github.com/celeo/helix_navi", rev = "<commit-sha>" }`
+   (SSH avoids credential prompts for private repos; HTTPS will ask for a username/password.)
+
+2. Build the parser (skip `hx --grammar fetch` entirely when using a local `path`):
+
+   ```sh
+   hx --grammar build
+   ```
+
+   This builds *all* configured grammars, so you may see failures for unrelated languages you never fetched — those are harmless. Confirm navi specifically with `hx --grammar build 2>&1 | grep -i navi`.
+
+3. Copy the highlight queries into Helix's runtime directory (Helix loads queries from there, not from this repo):
+
+   ```sh
+   mkdir -p ~/.config/helix/runtime/queries/navi
+   cp queries/highlights.scm ~/.config/helix/runtime/queries/navi/
+   ```
+
+   A symlink works too and is handy during development so edits show up without re-copying.
+
+4. Verify:
+
+   ```sh
+   hx --health navi
+   ```
+
+   You want `Tree-sitter parser: ✓` and `Highlight queries: ✓`. Textobject and indent queries show ✘ — that's expected, as this grammar doesn't ship those (navi has no nesting to indent or select). Then open a `.cheat` file to see highlighting.
 
 ## Development
 
